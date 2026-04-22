@@ -77,11 +77,10 @@ const PatientMyDoctor: React.FC = () => {
                         ].map((f) => (
                             <div
                                 key={f.label}
-                                className="px-3 py-2.5 rounded-lg mb-2"
-                                style={{ background: C.borderLight }}
+                                className="px-3 py-2.5 rounded-lg mb-2 bg-gray-100"
                             >
                                 <div
-                                    className="text-[11px] font-semibold uppercase tracking-[0.04em] mb-0.5"
+                                    className="text-[11px] font-semibold uppercase tracking-[0.04em] mb-1"
                                     style={{ color: C.textMuted }}
                                 >
                                     {f.label}
@@ -104,11 +103,11 @@ const PatientMyDoctor: React.FC = () => {
                             <div className="font-bold text-[15px] mb-4" style={{ color: C.text }}>
                                 ¿Qué puede ver tu médico?
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2.5">
                                 {doctorAccess.map((item) => (
                                     <div
                                         key={item}
-                                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
+                                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg"
                                         style={{ background: C.primaryLight }}
                                     >
                                         <IcCheck size={14} color={C.primary} />
