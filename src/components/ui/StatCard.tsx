@@ -1,6 +1,6 @@
 import React from "react";
 import type { StatCardProps } from "@/types";
-import { C } from "@/lib/colors";
+import { C } from "@/lib/Colors";
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, sub, icon, accent }) => {
     const col = accent ?? C.primary;
@@ -19,17 +19,17 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, sub, icon, accent }) 
             <div style={{ fontSize: 13, fontWeight: 600, color: C.textMuted, marginBottom: 8 }}>
                 {label}
             </div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: col, lineHeight: 1 }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: col, lineHeight: 1.1 }}>
                 {value}
             </div>
             {sub && (
-                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>{sub}</div>
+                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>{sub}</div>
             )}
             {icon && (
                 <div
                     style={{
                         position: "absolute", top: 16, right: 16,
-                        color: col + "66",
+                        color: col, opacity: 0.3,
                     }}
                 >
                     {icon}
