@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import Card from "@/components/ui/Card";
-import Btn from "@/components/ui/Btn";
+import Btn from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
-import { C } from "@/lib/colors";
+import { C } from "@/lib/Colors";
 import { IcCheck } from "@/components/ui/Icons";
 
 type IntakeStatus = "taken" | "pending" | "late" | "skipped";
@@ -39,6 +39,13 @@ const statusColor: Record<IntakeStatus, string> = {
     pending: C.amber,
     late:    C.coral,
     skipped: C.textMuted,
+};
+
+const statusBg: Record<IntakeStatus, string> = {
+    taken:   C.primaryLight,
+    pending: C.amberLight,
+    late:    C.coralLight,
+    skipped: C.borderLight,
 };
 
 const PatientIntakes: React.FC = () => {
@@ -115,7 +122,7 @@ const PatientIntakes: React.FC = () => {
                                             <div
                                                 className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
                                                 style={{
-                                                    background: statusColor[t.status] + "1a",
+                                                    background: statusBg[t.status],
                                                     color: statusColor[t.status],
                                                 }}
                                             >
@@ -145,9 +152,9 @@ const PatientIntakes: React.FC = () => {
                                                 )}
                                                 {t.status !== "pending" && (
                                                     <span
-                                                        className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                                                        className="text-[11px] font-bold px-2.5 py-1 rounded-full"
                                                         style={{
-                                                            background: statusColor[t.status] + "22",
+                                                            background: statusBg[t.status],
                                                             color: statusColor[t.status],
                                                         }}
                                                     >
