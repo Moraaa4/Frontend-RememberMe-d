@@ -1,194 +1,254 @@
 "use client";
 
 import React, { useState } from "react";
+import Card from "@/components/ui/Card";
+import Btn from "@/components/ui/Btn";
+import Input from "@/components/ui/Input";
+import ProgressBar from "@/components/ui/ProgressBar";
+import { C } from "@/lib/colors";
+import { IcPlus, IcPill, IcCheck, IcTrash } from "@/components/ui/Icons";
+import type { DoctorPatient } from "@/components/doctor/Dashboard";
 
-const initialDetailMeds = [
+type MedSource = "doctor" | "patient";
+
+interface DetailMedication {
+    id: number;
+    name: string;
+    dosage: string;
+    freq: number;
+    taken: number;
+    total: number;
+    is_active: boolean;
+    source: MedSource;
+}
+
+interface PrescribeForm {
+    name: string;
+    dosage: string;
+    freq: string;
+    start: string;
+    end: string;
+    instructions: string;
+}
+
+interface MedsTabProps {
+    patient: DoctorPatient;
+}
+
+const initialDetailMeds: DetailMedication[] = [
     { id: 1, name: "Metformina",  dosage: "850mg", freq: 12, taken: 18, total: 22, is_active: true, source: "doctor"  },
     { id: 2, name: "Lisinopril",  dosage: "10mg",  freq: 24, taken: 14, total: 16, is_active: true, source: "doctor"  },
     { id: 3, name: "Paracetamol", dosage: "500mg", freq: 8,  taken: 5,  total: 6,  is_active: true, source: "patient" },
 ];
 
-const MedsTab = ({ patient }) => {
-    const [meds, setMeds]         = useState(initialDetailMeds);
-    const [showForm, setShowForm] = useState(false);
-    const [form, setForm]         = useState({
+const freqOptions: [string, string][] = [
+    ["4",  "Cada 4h"],
+    ["6",  "Cada 6h"],
+    ["8",  "Cada 8h"],
+    ["12", "Cada 12h"],
+    ["24", "Una vez al día"],
+];
+
+const MedsTab: React.FC<MedsTabProps> = ({ patient }) => {
+    const [meds, setMeds]         = useState<DetailMedication[]>(initialDetailMeds);
+    const [showForm, setShowForm] = useState<boolean>(false);
+    const [form, setForm]         = useState<PrescribeForm>({
         name: "", dosage: "", freq: "8",
         start: "2026-04-22", end: "", instructions: "",
     });
 
-    const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+    const set =
+        (k: keyof PrescribeForm) =>
+            (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+                setForm((p) => ({ ...p, [k]: e.target.value }));
+            };
 
-    const prescribe = () => {
+    const prescribe = (): void => {
         if (!form.name.trim() || !form.dosage.trim()) return;
         const freq = parseInt(form.freq);
-        setMeds((prev) => [{
-            id: Date.now(), name: form.name, dosage: form.dosage,
-            freq, taken: 0, total: Math.round(24 / freq), is_active: true, source: "doctor",
-        }, ...prev]);
+        const newMed: DetailMedication = {
+            id: Date.now(),
+            name: form.name,
+            dosage: form.dosage,
+            freq,
+            taken: 0,
+            total: Math.round(24 / freq),
+            is_active: true,
+            source: "doctor",
+        };
+        setMeds((prev) => [newMed, ...prev]);
         setForm({ name: "", dosage: "", freq: "8", start: "2026-04-22", end: "", instructions: "" });
         setShowForm(false);
     };
 
-    const removeMed = (id) => setMeds((prev) => prev.filter((m) => m.id !== id));
+    const removeMed = (id: number): void => {
+        setMeds((prev) => prev.filter((m) => m.id !== id));
+    };
 
     return (
         <div>
-
-            {/* Header */}
             <div className="flex justify-between items-center mb-4">
-                <div className="text-[15px] font-bold text-gray-800">
+                <div className="text-[15px] font-bold" style={{ color: C.text }}>
                     Medicamentos del paciente
-                    <span className="text-[13px] font-normal ml-2 text-gray-400">
+                    <span className="text-[13px] font-normal ml-2" style={{ color: C.textMuted }}>
             {meds.filter((m) => m.is_active).length} activos
           </span>
                 </div>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 border-none cursor-pointer transition-colors"
-                >
-                    <span>+</span> Prescribir medicamento
-                </button>
+                <Btn icon={<IcPlus size={16} />} onClick={() => setShowForm(!showForm)}>
+                    Prescribir medicamento
+                </Btn>
             </div>
 
-            {/* Prescription form */}
             {showForm && (
-                <div className="mb-4 p-5 rounded-2xl border-l-4 border-blue-400 bg-blue-50">
-                    <div className="font-bold text-sm mb-3.5 text-blue-700">
+                <Card
+                    className="mb-4"
+                    style={{
+                        borderLeft: `4px solid ${C.primary}`,
+                        background: C.primaryLight,
+                    }}
+                >
+                    <div className="font-bold text-sm mb-3.5" style={{ color: C.primaryDark }}>
                         Nueva prescripción para {patient.full_name}
                     </div>
+
                     <div className="grid grid-cols-3 gap-3 mb-3">
+                        <Input
+                            label="Medicamento"
+                            placeholder="Ej. Metformina"
+                            value={form.name}
+                            onChange={set("name")}
+                            required
+                        />
+                        <Input
+                            label="Dosis"
+                            placeholder="Ej. 850mg"
+                            value={form.dosage}
+                            onChange={set("dosage")}
+                            required
+                        />
                         <div>
-                            <label className="text-[13px] font-semibold block mb-[5px] text-gray-700">Medicamento</label>
-                            <input
-                                placeholder="Ej. Metformina"
-                                value={form.name}
-                                onChange={set("name")}
-                                className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white outline-none focus:border-blue-400 transition-colors"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[13px] font-semibold block mb-[5px] text-gray-700">Dosis</label>
-                            <input
-                                placeholder="Ej. 850mg"
-                                value={form.dosage}
-                                onChange={set("dosage")}
-                                className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white outline-none focus:border-blue-400 transition-colors"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[13px] font-semibold block mb-[5px] text-gray-700">Frecuencia</label>
+                            <label
+                                className="text-[13px] font-semibold block mb-[5px]"
+                                style={{ color: C.text }}
+                            >
+                                Frecuencia
+                            </label>
                             <select
                                 value={form.freq}
                                 onChange={set("freq")}
-                                className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white outline-none focus:border-blue-400 transition-colors cursor-pointer"
+                                className="w-full text-sm px-3.5 py-2.5 rounded-lg outline-none"
+                                style={{
+                                    fontFamily: "Nunito, sans-serif",
+                                    border: `1.5px solid ${C.border}`,
+                                    background: C.surface,
+                                    color: C.text,
+                                }}
                             >
-                                {[["4","Cada 4h"],["6","Cada 6h"],["8","Cada 8h"],["12","Cada 12h"],["24","Una vez al día"]].map(([v, l]) => (
+                                {freqOptions.map(([v, l]) => (
                                     <option key={v} value={v}>{l}</option>
                                 ))}
                             </select>
                         </div>
                     </div>
+
                     <div className="grid grid-cols-2 gap-3 mb-3">
-                        <div>
-                            <label className="text-[13px] font-semibold block mb-[5px] text-gray-700">Fecha inicio</label>
-                            <input
-                                type="date"
-                                value={form.start}
-                                onChange={set("start")}
-                                className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white outline-none focus:border-blue-400 transition-colors"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[13px] font-semibold block mb-[5px] text-gray-700">Fecha fin (vacío = crónico)</label>
-                            <input
-                                type="date"
-                                value={form.end}
-                                onChange={set("end")}
-                                className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white outline-none focus:border-blue-400 transition-colors"
-                            />
-                        </div>
+                        <Input label="Fecha inicio" type="date" value={form.start} onChange={set("start")} />
+                        <Input label="Fecha fin (vacío = crónico)" type="date" value={form.end} onChange={set("end")} />
                     </div>
-                    <div>
-                        <label className="text-[13px] font-semibold block mb-[5px] text-gray-700">Indicaciones</label>
-                        <input
-                            placeholder="Ej. Tomar con alimentos, en ayunas..."
-                            value={form.instructions}
-                            onChange={set("instructions")}
-                            className="w-full text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white outline-none focus:border-blue-400 transition-colors"
-                        />
-                    </div>
+
+                    <Input
+                        label="Indicaciones"
+                        placeholder="Ej. Tomar con alimentos, en ayunas..."
+                        value={form.instructions}
+                        onChange={set("instructions")}
+                    />
+
                     <div className="flex gap-2.5 mt-3.5">
-                        <button
-                            onClick={prescribe}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 border-none cursor-pointer transition-colors"
-                        >
-                            ✓ Guardar prescripción
-                        </button>
-                        <button
-                            onClick={() => setShowForm(false)}
-                            className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 bg-transparent border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
-                        >
+                        <Btn icon={<IcCheck size={16} />} onClick={prescribe}>
+                            Guardar prescripción
+                        </Btn>
+                        <Btn variant="ghost" onClick={() => setShowForm(false)}>
                             Cancelar
-                        </button>
+                        </Btn>
                     </div>
-                </div>
+                </Card>
             )}
 
-            {/* Medication list */}
             <div className="flex flex-col gap-3">
                 {meds.map((m) => {
-                    const adh   = m.total > 0 ? Math.round((m.taken / m.total) * 100) : 0;
-                    const isRx  = m.source === "doctor";
-                    const col   = adh >= 80 ? "bg-blue-500" : "bg-amber-400";
-                    const colTx = adh >= 80 ? "text-blue-500" : "text-amber-400";
+                    const adh  = m.total > 0 ? Math.round((m.taken / m.total) * 100) : 0;
+                    const col  = adh >= 80 ? C.primary : C.amber;
+                    const isRx = m.source === "doctor";
 
                     return (
-                        <div
+                        <Card
                             key={m.id}
-                            className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 border-l-4 ${isRx ? "border-l-blue-500" : "border-l-violet-400"}`}
+                            pad={16}
+                            style={{ borderLeft: `4px solid ${isRx ? C.primary : C.violet}` }}
                         >
                             <div className="flex items-center gap-3.5">
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-xl ${isRx ? "bg-blue-50 text-blue-500" : "bg-violet-50 text-violet-500"}`}>
-                                    💊
+                                <div
+                                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                                    style={{
+                                        background: isRx ? C.primaryLight : C.violetLight,
+                                        color:      isRx ? C.primary      : C.violet,
+                                    }}
+                                >
+                                    <IcPill size={22} />
                                 </div>
+
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-[3px]">
-                                        <span className="text-[15px] font-bold text-gray-800">{m.name}</span>
-                                        <span className="text-sm text-gray-400">{m.dosage}</span>
+                    <span className="text-[15px] font-bold" style={{ color: C.text }}>
+                      {m.name}
+                    </span>
+                                        <span className="text-sm font-normal" style={{ color: C.textMuted }}>
+                      {m.dosage}
+                    </span>
                                         {isRx ? (
-                                            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">Rx</span>
+                                            <span
+                                                className="text-[11px] font-extrabold px-2 py-0.5 rounded-full"
+                                                style={{ background: C.primaryLight, color: C.primaryDark }}
+                                            >
+                        Rx
+                      </span>
                                         ) : (
-                                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-500">Propio</span>
+                                            <span
+                                                className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                                                style={{ background: C.violetLight, color: C.violet }}
+                                            >
+                        Propio
+                      </span>
                                         )}
                                     </div>
-                                    <div className="text-[13px] text-gray-400">Cada {m.freq}h</div>
+                                    <div className="text-[13px]" style={{ color: C.textMuted }}>
+                                        Cada {m.freq}h
+                                    </div>
                                 </div>
+
                                 <div className="text-right min-w-[150px] shrink-0">
-                                    <div className="text-[13px] font-semibold mb-1 text-gray-400">
+                                    <div className="text-[13px] font-semibold mb-1" style={{ color: C.textMuted }}>
                                         {m.taken}/{m.total} tomas ·{" "}
-                                        <span className={colTx}>{adh}%</span>
+                                        <span style={{ color: col }}>{adh}%</span>
                                     </div>
-                                    <div className="w-full h-[6px] bg-gray-100 rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full ${col}`}
-                                            style={{ width: `${(m.taken / m.total) * 100}%` }}
-                                        />
-                                    </div>
+                                    <ProgressBar value={m.taken} max={m.total} color={col} height={6} />
                                 </div>
+
                                 {isRx && (
-                                    <button
+                                    <Btn
+                                        variant="ghost"
+                                        size="sm"
+                                        icon={<IcTrash size={14} />}
                                         onClick={() => removeMed(m.id)}
-                                        className="p-2 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 border-none bg-transparent cursor-pointer transition-colors"
                                     >
-                                        🗑
-                                    </button>
+                                        {" "}
+                                    </Btn>
                                 )}
                             </div>
-                        </div>
+                        </Card>
                     );
                 })}
             </div>
-
         </div>
     );
 };
