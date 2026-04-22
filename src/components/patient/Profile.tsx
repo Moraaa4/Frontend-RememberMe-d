@@ -4,7 +4,7 @@ import React from "react";
 import Card from "@/components/ui/Card";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
-import { C } from "@/lib/colors";
+import { C } from "@/lib/Colors";
 
 interface ProfileField {
     label: string;
@@ -78,7 +78,7 @@ const PatientProfile: React.FC = () => (
                     >
                         <div
                             className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1"
-                            style={{ color: "oklch(0.45 0.15 25)" }}
+                            style={{ color: C.coralDark }}
                         >
                             Alergias
                         </div>
@@ -91,7 +91,7 @@ const PatientProfile: React.FC = () => (
                     >
                         <div
                             className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1"
-                            style={{ color: "oklch(0.45 0.12 75)" }}
+                            style={{ color: C.amberDark }}
                         >
                             Condiciones crónicas
                         </div>
