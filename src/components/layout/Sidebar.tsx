@@ -2,7 +2,7 @@
 
 import React from "react";
 import Avatar from "@/components/ui/Avatar";
-import { C } from "@/lib/colors";
+import { C } from "@/lib/Colors";
 import {
     IcHome, IcPill, IcCheck, IcActivity,
     IcLink, IcUser, IcUsers, IcLogout,
@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, active, onNav, onLogout }) => {
                             <span className="flex-1">{item.label}</span>
                             {item.badge && (
                                 <span
-                                    className="text-[11px] font-bold px-[7px] py-px rounded-full"
+                                    className="text-[11px] font-bold px-2 py-0.5 rounded-full"
                                     style={{ background: C.amber, color: "#fff" }}
                                 >
                   {item.badge}
