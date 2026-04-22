@@ -1,10 +1,22 @@
 import React from "react";
+import type { EmptyStateProps } from "@/types";
+import { C } from "@/lib/colors";
 
-const EmptyState = ({ icon, title, desc, action }) => (
-    <div className="flex flex-col items-center justify-center px-6 py-12 text-center gap-3">
-        {icon && <div className="text-gray-300 mb-1">{icon}</div>}
-        <div className="text-base font-bold text-gray-800">{title}</div>
-        {desc && <div className="text-sm text-gray-400 max-w-[320px]">{desc}</div>}
+const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, desc, action }) => (
+    <div
+        style={{
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center",
+            padding: "48px 24px", textAlign: "center", gap: 12,
+        }}
+    >
+        {icon && (
+            <div style={{ color: C.textLight, marginBottom: 4 }}>{icon}</div>
+        )}
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>{title}</div>
+        {desc && (
+            <div style={{ fontSize: 14, color: C.textMuted, maxWidth: 320 }}>{desc}</div>
+        )}
         {action}
     </div>
 );
