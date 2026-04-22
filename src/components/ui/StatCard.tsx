@@ -7,23 +7,16 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, sub, icon, accent }) 
 
     return (
         <div
-            style={{
-                background: C.surface,
-                borderRadius: 14,
-                border: `1px solid ${C.border}`,
-                padding: 20,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                position: "relative", overflow: "hidden",
-            }}
+            className="bg-white rounded-[14px] border border-[#E5E7EB] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] relative overflow-hidden"
         >
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.textMuted, marginBottom: 8 }}>
+            <div className="text-[13px] font-semibold mb-2" style={{ color: C.textMuted }}>
                 {label}
             </div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: col, lineHeight: 1.1 }}>
+            <div className="text-[28px] font-extrabold" style={{ color: col, lineHeight: 1.1 }}>
                 {value}
             </div>
             {sub && (
-                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 6 }}>{sub}</div>
+                <div className="text-xs mt-1.5" style={{ color: C.textMuted }}>{sub}</div>
             )}
             {icon && (
                 <div
