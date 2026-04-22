@@ -1,10 +1,11 @@
-@import "tailwindcss/preflight";
 @import "tailwindcss";
 
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+@layer base {
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 }
 
 @theme {
@@ -15,6 +16,11 @@ html, body {
     height: 100%;
     background: #F8FAFC;
     color: #111827;
+}
+
+body > div:first-child,
+#__next {
+    height: 100%;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

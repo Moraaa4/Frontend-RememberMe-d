@@ -68,15 +68,9 @@ const AppShell: React.FC<AppShellProps> = ({ role, onLogout }) => {
     };
 
     return (
-        <div
-            className="flex min-h-screen"
-            style={{ background: C.bg, fontFamily: "Nunito, sans-serif" }}
-        >
+        <div style={{ background: C.bg, fontFamily: "Nunito, sans-serif", minHeight: "100vh" }}>
             <Sidebar role={role} active={screen} onNav={handleNav} onLogout={onLogout} />
-            <main
-                className="flex-1 min-h-screen overflow-x-hidden"
-                style={{ marginLeft: 240, padding: "32px 36px" }}
-            >
+            <main style={{ marginLeft: 240, padding: "32px 36px", minHeight: "100vh" }}>
                 {renderContent()}
             </main>
         </div>
