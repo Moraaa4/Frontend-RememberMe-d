@@ -5,7 +5,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import SeverityDot from "@/components/ui/SeverityDot";
-import { C } from "@/lib/colors";
+import { C } from "@/lib/Colors";
 import { IcPill } from "@/components/ui/Icons";
 
 interface Medication {
@@ -130,8 +130,8 @@ const PatientDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                     <span
-                                        className="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                                        style={{ background: s.color + "22", color: s.color }}
+                                        className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                                        style={{ background: s.bg, color: s.color }}
                                     >
                     {s.label}
                   </span>
