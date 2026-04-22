@@ -1,18 +1,42 @@
 import React from "react";
+import type { StatCardProps } from "@/types";
+import { C } from "@/lib/colors";
 
-const StatCard = ({ label, value, sub, icon, accent = "#60a5fa" }) => (
-    <div className="bg-white rounded-[14px] border border-gray-100 p-5 shadow-sm relative overflow-hidden">
-        <div className="text-[13px] font-semibold text-gray-400 mb-2">{label}</div>
-        <div className="text-[28px] font-extrabold leading-none" style={{ color: accent }}>
-            {value}
-        </div>
-        {sub && <div className="text-xs text-gray-400 mt-1">{sub}</div>}
-        {icon && (
-            <div className="absolute top-4 right-4" style={{ color: accent + "66" }}>
-                {icon}
+const StatCard: React.FC<StatCardProps> = ({ label, value, sub, icon, accent }) => {
+    const col = accent ?? C.primary;
+
+    return (
+        <div
+            style={{
+                background: C.surface,
+                borderRadius: 14,
+                border: `1px solid ${C.border}`,
+                padding: 20,
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                position: "relative", overflow: "hidden",
+            }}
+        >
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.textMuted, marginBottom: 8 }}>
+                {label}
             </div>
-        )}
-    </div>
-);
+            <div style={{ fontSize: 28, fontWeight: 800, color: col, lineHeight: 1 }}>
+                {value}
+            </div>
+            {sub && (
+                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>{sub}</div>
+            )}
+            {icon && (
+                <div
+                    style={{
+                        position: "absolute", top: 16, right: 16,
+                        color: col + "66",
+                    }}
+                >
+                    {icon}
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default StatCard;
