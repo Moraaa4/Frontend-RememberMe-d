@@ -1,39 +1,42 @@
 import React from "react";
+import type { BadgeProps } from "@/types";
+import { C } from "@/lib/colors";
 
-const map = {
-    taken:    { bg: "bg-blue-50",   text: "text-blue-700"   },
-    pending:  { bg: "bg-amber-50",  text: "text-amber-700"  },
-    late:     { bg: "bg-red-50",    text: "text-red-700"    },
-    skipped:  { bg: "bg-gray-100",  text: "text-gray-400"   },
-    active:   { bg: "bg-blue-50",   text: "text-blue-700"   },
-    inactive: { bg: "bg-gray-100",  text: "text-gray-400"   },
-    alert:    { bg: "bg-red-50",    text: "text-red-700"    },
-    doctor:   { bg: "bg-violet-50", text: "text-violet-600" },
-    patient:  { bg: "bg-blue-50",   text: "text-blue-700"   },
-    default:  { bg: "bg-gray-100",  text: "text-gray-400"   },
+type BadgeStyle = { bg: string; color: string };
+
+const map: Record<NonNullable<BadgeProps["variant"]>, BadgeStyle> = {
+    taken:    { bg: C.primaryLight, color: C.primaryDark         },
+    pending:  { bg: C.amberLight,   color: "oklch(0.45 0.12 75)" },
+    late:     { bg: C.coralLight,   color: "oklch(0.45 0.15 25)" },
+    skipped:  { bg: C.borderLight,  color: C.textMuted           },
+    active:   { bg: C.primaryLight, color: C.primaryDark         },
+    inactive: { bg: C.borderLight,  color: C.textMuted           },
+    alert:    { bg: C.coralLight,   color: "oklch(0.45 0.15 25)" },
+    doctor:   { bg: C.violetLight,  color: C.violet              },
+    patient:  { bg: C.primaryLight, color: C.primaryDark         },
+    default:  { bg: C.borderLight,  color: C.textMuted           },
 };
 
-const dotColor = {
-    taken:    "bg-blue-700",
-    pending:  "bg-amber-700",
-    late:     "bg-red-700",
-    skipped:  "bg-gray-400",
-    active:   "bg-blue-700",
-    inactive: "bg-gray-400",
-    alert:    "bg-red-700",
-    doctor:   "bg-violet-600",
-    patient:  "bg-blue-700",
-    default:  "bg-gray-400",
-};
-
-const Badge = ({ label, variant = "default", dot }) => {
+const Badge: React.FC<BadgeProps> = ({ label, variant = "default", dot }) => {
     const s = map[variant] ?? map.default;
-    const d = dotColor[variant] ?? dotColor.default;
     return (
         <span
-            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${s.bg} ${s.text}`}
+            style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                fontSize: 11, fontWeight: 700,
+                background: s.bg, color: s.color,
+                padding: "2px 8px", borderRadius: 999,
+                whiteSpace: "nowrap",
+            }}
         >
-      {dot && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${d}`} />}
+      {dot && (
+          <span
+              style={{
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: s.color, flexShrink: 0,
+              }}
+          />
+      )}
             {label}
     </span>
     );
