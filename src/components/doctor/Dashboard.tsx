@@ -174,7 +174,7 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onSelectPatient }) =>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-0.5">
+                    <div className="flex flex-col gap-1">
                         {filtered.map((p) => (
                             <div
                                 key={p.id}
@@ -199,7 +199,7 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onSelectPatient }) =>
                                     color={p.alert ? C.coral : C.primary}
                                 />
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
+                                    <div className="flex items-center gap-2 mb-1">
                     <span
                         className="text-sm font-bold truncate"
                         style={{ color: C.text }}
