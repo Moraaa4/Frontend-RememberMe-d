@@ -212,7 +212,7 @@ const PatientSymptoms: React.FC = () => {
                     >
                         <div className="flex items-center gap-3.5">
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <div className="flex items-center gap-2.5 mb-1 flex-wrap">
                   <span className="text-[15px] font-bold truncate" style={{ color: C.text }}>
                     {s.symptom_name}
                   </span>
