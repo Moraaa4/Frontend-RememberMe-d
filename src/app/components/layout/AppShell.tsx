@@ -47,9 +47,11 @@ const AppShell = ({ role, onLogout }) => {
     };
 
     return (
-        <div>
-            <div>{/* Sidebar */}</div>
-            <main>
+        <div className="flex min-h-screen bg-gray-50 font-[Nunito,sans-serif]">
+            <div className="w-[240px] shrink-0">
+                {/* Sidebar */}
+            </div>
+            <main className="flex-1 min-h-screen overflow-x-hidden ml-[240px] px-9 py-8">
                 {renderContent()}
             </main>
         </div>
@@ -77,7 +79,7 @@ const App = () => {
         setState({});
     };
 
-    if (!state.authed) return <div>AuthScreen</div>;
+    if (!state.authed) return <div className="min-h-screen bg-gray-50">AuthScreen</div>;
     return <AppShell role={state.role} onLogout={logout} />;
 };
 
