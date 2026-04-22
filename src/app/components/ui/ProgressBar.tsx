@@ -1,16 +1,28 @@
 import React from "react";
+import type { ProgressBarProps } from "@/types";
+import { C } from "@/lib/colors";
 
-const ProgressBar = ({ value, max = 100, color = "#60a5fa", height = 6 }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({
+                                                     value, max = 100, color, height = 6,
+                                                 }) => {
     const pct = Math.min(100, Math.round((value / max) * 100));
+    const col = color ?? C.primary;
 
     return (
         <div
-            className="w-full rounded-full overflow-hidden bg-gray-100"
-            style={{ height }}
+            style={{
+                width: "100%", height,
+                background: C.borderLight,
+                borderRadius: 999, overflow: "hidden",
+            }}
         >
             <div
-                className="h-full rounded-full transition-[width] duration-300 ease-in-out"
-                style={{ width: `${pct}%`, background: color }}
+                style={{
+                    width: `${pct}%`, height: "100%",
+                    background: col,
+                    borderRadius: 999,
+                    transition: "width .3s ease",
+                }}
             />
         </div>
     );
