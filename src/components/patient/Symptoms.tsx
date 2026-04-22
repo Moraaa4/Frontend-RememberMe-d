@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Card from "@/components/ui/Card";
-import Btn from "@/components/ui/Btn";
+import Btn from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Input from "@/components/ui/Input";
 import SeverityDot from "@/components/ui/SeverityDot";
-import { C } from "@/lib/colors";
+import { C } from "@/lib/Colors";
 import { IcPlus, IcCheck, IcTrash } from "@/components/ui/Icons";
 
 interface SymptomEntry {
@@ -145,7 +145,7 @@ const PatientSymptoms: React.FC = () => {
                     {form.severity >= 8 && (
                         <div
                             className="flex items-center gap-2 px-3 py-2 rounded-lg mt-3 text-[13px] font-semibold"
-                            style={{ background: C.coralLight, color: "oklch(0.45 0.15 25)" }}
+                            style={{ background: C.coralLight, color: C.coralDark }}
                         >
                             Severidad alta — tu médico recibirá una alerta automática
                         </div>
