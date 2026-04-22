@@ -63,7 +63,7 @@ const profileFields = (patient: Patient) => [
     { l: "Vinculado desde", v: patient.linked_at },
 ];
 
-const PatientDetail: React.FC<PatientDetailProps> = ({ patient, onBack }) => {
+const PatientDetails: React.FC<PatientDetailProps> = ({ patient, onBack }) => {
     const [tab, setTab] = useState<DetailTab>("overview");
 
     if (!patient) return null;
@@ -348,4 +348,4 @@ const PatientDetail: React.FC<PatientDetailProps> = ({ patient, onBack }) => {
     );
 };
 
-export default PatientDetail;
+export default PatientDetails;
