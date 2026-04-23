@@ -297,8 +297,9 @@ const PatientDetails: React.FC<PatientDetailProps> = ({ patient, onBack }) => {
                             >
                                 Alergias y contacto de emergencia
                             </div>
-                            <div className="text-sm" style={{ color: C.textMuted }}>
-                                No disponible — el paciente debe completar su perfil médico.
+                            <div className="text-sm" style={{ color: C.text }}>
+                                <div className="mb-1.5"><strong style={{ color: C.textMuted }}>Alergias:</strong> {patient.allergies}</div>
+                                <div><strong style={{ color: C.textMuted }}>Contacto:</strong> {patient.emergency_contact_name} {patient.emergency_contact_phone !== "No registrado" && `(${patient.emergency_contact_phone})`}</div>
                             </div>
                         </div>
                     </Card>

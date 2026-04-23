@@ -1,26 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Card from "@/components/ui/Card";
 import Btn from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import ProgressBar from "@/components/ui/ProgressBar";
 import { C } from "@/lib/Colors";
 import { IcPlus, IcPill, IcCheck, IcTrash } from "@/components/ui/Icons";
 import type { DoctorPatient } from "@/types";
-
-type MedSource = "doctor" | "patient";
-
-interface DetailMedication {
-    id: number;
-    name: string;
-    dosage: string;
-    freq: number;
-    taken: number;
-    total: number;
-    is_active: boolean;
-    source: MedSource;
-}
+import type { ApiMedication } from "@/types/api";
 
 interface PrescribeForm {
     name: string;
@@ -44,44 +31,90 @@ const freqOptions: [string, string][] = [
 ];
 
 const MedsTab: React.FC<MedsTabProps> = ({ patient }) => {
-    const [meds, setMeds]         = useState<DetailMedication[]>([]);
+    const [meds, setMeds]         = useState<ApiMedication[]>([]);
+    const [loading, setLoading]   = useState<boolean>(true);
+    const [error, setError]       = useState<string>("");
+    
     const [showForm, setShowForm] = useState<boolean>(false);
+    const [saving, setSaving]     = useState<boolean>(false);
+    const [formError, setFormError] = useState<string>("");
     const [form, setForm]         = useState<PrescribeForm>({
         name: "", dosage: "", freq: "8",
         start: new Date().toISOString().slice(0, 10),
         end: "", instructions: "",
     });
 
+    const loadMeds = useCallback(async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const res = await fetch(`/api/links/patients/${patient.id}/medications`);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error ?? "Error al cargar medicamentos");
+            setMeds(Array.isArray(data) ? data : []);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Error al cargar medicamentos");
+        } finally {
+            setLoading(false);
+        }
+    }, [patient.id]);
+
+    useEffect(() => {
+        void loadMeds();
+    }, [loadMeds]);
+
     const set =
         (k: keyof PrescribeForm) =>
             (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+                setFormError("");
                 setForm((p) => ({ ...p, [k]: e.target.value }));
             };
 
-    const prescribe = (): void => {
-        if (!form.name.trim() || !form.dosage.trim()) return;
-        const freq = parseInt(form.freq);
-        const newMed: DetailMedication = {
-            id: Date.now(),
-            name: form.name,
-            dosage: form.dosage,
-            freq,
-            taken: 0,
-            total: Math.round(24 / freq),
-            is_active: true,
-            source: "doctor",
-        };
-        setMeds((prev) => [newMed, ...prev]);
-        setForm({
-            name: "", dosage: "", freq: "8",
-            start: new Date().toISOString().slice(0, 10),
-            end: "", instructions: "",
-        });
-        setShowForm(false);
+    const prescribe = async (): Promise<void> => {
+        if (!form.name.trim() || !form.dosage.trim()) {
+            setFormError("El nombre y dosis son requeridos");
+            return;
+        }
+        setSaving(true);
+        setFormError("");
+        try {
+            const res = await fetch(`/api/links/patients/${patient.id}/medications`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: form.name,
+                    dosage: form.dosage,
+                    frequency_hours: parseInt(form.freq),
+                    start_date: form.start,
+                    end_date: form.end || undefined,
+                    instructions: form.instructions || undefined,
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error ?? "Error al prescribir");
+            
+            setMeds((prev) => [data as ApiMedication, ...prev]);
+            setForm({
+                name: "", dosage: "", freq: "8",
+                start: new Date().toISOString().slice(0, 10),
+                end: "", instructions: "",
+            });
+            setShowForm(false);
+        } catch (e) {
+            setFormError(e instanceof Error ? e.message : "Error al prescribir");
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const removeMed = (id: number): void => {
-        setMeds((prev) => prev.filter((m) => m.id !== id));
+    const removeMed = async (id: number): Promise<void> => {
+        if (!confirm("¿Eliminar este medicamento?")) return;
+        try {
+            await fetch(`/api/links/patients/${patient.id}/medications/${id}`, { method: "DELETE" });
+            setMeds((prev) => prev.filter((m) => m.id !== id));
+        } catch {
+            // silent fail
+        }
     };
 
     return (
@@ -89,9 +122,11 @@ const MedsTab: React.FC<MedsTabProps> = ({ patient }) => {
             <div className="flex justify-between items-center mb-4">
                 <div className="text-[15px] font-bold" style={{ color: C.text }}>
                     Medicamentos del paciente
-                    <span className="text-[13px] font-normal ml-2" style={{ color: C.textMuted }}>
-                        {meds.filter((m) => m.is_active).length} activos esta sesión
-                    </span>
+                    {!loading && !error && (
+                        <span className="text-[13px] font-normal ml-2" style={{ color: C.textMuted }}>
+                            {meds.filter((m) => m.is_active).length} activos esta sesión
+                        </span>
+                    )}
                 </div>
                 <Btn icon={<IcPlus size={16} />} onClick={() => setShowForm(!showForm)}>
                     Prescribir medicamento
@@ -159,16 +194,15 @@ const MedsTab: React.FC<MedsTabProps> = ({ patient }) => {
                         onChange={set("instructions")}
                     />
 
-                    <div
-                        className="mt-3 px-3 py-2 rounded-lg text-[12px]"
-                        style={{ background: C.amberLight, color: C.amberDark }}
-                    >
-                        Las prescripciones son locales a esta sesión y no se envían al paciente en esta versión.
-                    </div>
+                    {formError && (
+                        <div className="mt-3 px-3 py-2 rounded-lg text-[13px] font-semibold" style={{ background: C.coralLight, color: C.coralDark }}>
+                            {formError}
+                        </div>
+                    )}
 
                     <div className="flex gap-2.5 mt-3">
-                        <Btn icon={<IcCheck size={16} />} onClick={prescribe}>
-                            Guardar prescripción
+                        <Btn icon={<IcCheck size={16} />} onClick={() => void prescribe()} disabled={saving}>
+                            {saving ? "Guardando..." : "Guardar prescripción"}
                         </Btn>
                         <Btn variant="ghost" onClick={() => setShowForm(false)}>
                             Cancelar
@@ -177,71 +211,57 @@ const MedsTab: React.FC<MedsTabProps> = ({ patient }) => {
                 </Card>
             )}
 
-            {meds.length === 0 && !showForm && (
+            {loading ? (
                 <div className="text-sm py-10 text-center" style={{ color: C.textMuted }}>
-                    No hay medicamentos en esta sesión.
-                    <br />Las prescripciones previas del paciente no están disponibles en esta vista.
+                    Cargando medicamentos...
+                </div>
+            ) : error ? (
+                <div className="text-sm py-10 text-center" style={{ color: C.coral }}>
+                    {error}
+                </div>
+            ) : meds.length === 0 ? (
+                <div className="text-sm py-10 text-center" style={{ color: C.textMuted }}>
+                    No hay medicamentos registrados para el paciente.
+                </div>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    {meds.map((m) => {
+                        return (
+                            <Card
+                                key={m.id}
+                                pad={16}
+                                style={{ borderLeft: `4px solid ${C.primary}` }}
+                            >
+                                <div className="flex items-center gap-3.5">
+                                    <div
+                                        className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                                        style={{
+                                            background: C.primaryLight,
+                                            color: C.primary,
+                                        }}
+                                    >
+                                        <IcPill size={22} />
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-[3px]">
+                                            <span className="text-[15px] font-bold" style={{ color: C.text }}>{m.name}</span>
+                                            <span className="text-sm font-normal" style={{ color: C.textMuted }}>{m.dosage}</span>
+                                        </div>
+                                        <div className="text-[13px]" style={{ color: C.textMuted }}>Cada {m.frequency_hours}h</div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Btn variant="ghost" size="sm" icon={<IcTrash size={14} />} onClick={() => void removeMed(m.id)}>
+                                            {" "}
+                                        </Btn>
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
-
-            <div className="flex flex-col gap-3">
-                {meds.map((m) => {
-                    const adh  = m.total > 0 ? Math.round((m.taken / m.total) * 100) : 0;
-                    const col  = adh >= 80 ? C.primary : C.amber;
-                    const isRx = m.source === "doctor";
-
-                    return (
-                        <Card
-                            key={m.id}
-                            pad={16}
-                            style={{ borderLeft: `4px solid ${isRx ? C.primary : C.violet}` }}
-                        >
-                            <div className="flex items-center gap-3.5">
-                                <div
-                                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                                    style={{
-                                        background: isRx ? C.primaryLight : C.violetLight,
-                                        color:      isRx ? C.primary      : C.violet,
-                                    }}
-                                >
-                                    <IcPill size={22} />
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-[3px]">
-                                        <span className="text-[15px] font-bold" style={{ color: C.text }}>{m.name}</span>
-                                        <span className="text-sm font-normal" style={{ color: C.textMuted }}>{m.dosage}</span>
-                                        {isRx ? (
-                                            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full" style={{ background: C.primaryLight, color: C.primaryDark }}>
-                                                Rx
-                                            </span>
-                                        ) : (
-                                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: C.violetLight, color: C.violet }}>
-                                                Propio
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="text-[13px]" style={{ color: C.textMuted }}>Cada {m.freq}h</div>
-                                </div>
-
-                                <div className="text-right min-w-[150px] shrink-0">
-                                    <div className="text-[13px] font-semibold mb-1" style={{ color: C.textMuted }}>
-                                        {m.taken}/{m.total} tomas ·{" "}
-                                        <span style={{ color: col }}>{adh}%</span>
-                                    </div>
-                                    <ProgressBar value={m.taken} max={m.total} color={col} height={6} />
-                                </div>
-
-                                {isRx && (
-                                    <Btn variant="ghost" size="sm" icon={<IcTrash size={14} />} onClick={() => removeMed(m.id)}>
-                                        {" "}
-                                    </Btn>
-                                )}
-                            </div>
-                        </Card>
-                    );
-                })}
-            </div>
         </div>
     );
 };

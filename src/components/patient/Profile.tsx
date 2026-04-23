@@ -9,6 +9,7 @@ import type { ApiUser, ApiMedicalProfile } from "@/types/api";
 
 interface Props {
     userName: string;
+    role: "PATIENT" | "DOCTOR";
 }
 
 function calcAge(dob: string | null): string {
@@ -20,23 +21,60 @@ function calcAge(dob: string | null): string {
     return `${age} años`;
 }
 
-const PatientProfile: React.FC<Props> = ({ userName }) => {
+const PatientProfile: React.FC<Props> = ({ userName, role: userRole }) => {
     const [user, setUser]       = useState<ApiUser | null>(null);
     const [profile, setProfile] = useState<ApiMedicalProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [editing, setEditing] = useState(false);
+    const [saving, setSaving]   = useState(false);
+    const [form, setForm]       = useState({
+        allergies: "",
+        chronic_conditions: "",
+        emergency_contact_name: "",
+        emergency_contact_phone: "",
+    });
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/auth/profile").then((r) => r.json()),
-            fetch("/api/medical-profiles/me").then((r) => (r.ok ? r.json() : null)),
-        ])
+        const fetches = [fetch("/api/auth/profile").then((r) => r.json())];
+        if (userRole === "PATIENT") {
+            fetches.push(fetch("/api/medical-profiles/me").then((r) => (r.ok ? r.json() : null)));
+        }
+        
+        Promise.all(fetches)
             .then(([u, p]) => {
                 setUser(u as ApiUser);
-                setProfile(p as ApiMedicalProfile | null);
+                if (p) {
+                    setProfile(p as ApiMedicalProfile);
+                    setForm({
+                        allergies: p.allergies || "",
+                        chronic_conditions: p.chronic_conditions || "",
+                        emergency_contact_name: p.emergency_contact_name || "",
+                        emergency_contact_phone: p.emergency_contact_phone || "",
+                    });
+                }
             })
             .catch(() => {})
             .finally(() => setLoading(false));
-    }, []);
+    }, [userRole]);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const res = await fetch("/api/medical-profiles/me", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form),
+            });
+            if (!res.ok) throw new Error();
+            const updated = await res.json() as ApiMedicalProfile;
+            setProfile(updated);
+            setEditing(false);
+        } catch {
+            alert("Error al guardar el perfil");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -64,13 +102,24 @@ const PatientProfile: React.FC<Props> = ({ userName }) => {
 
     return (
         <div>
-            <div className="mb-7">
-                <h1 className="text-[26px] font-extrabold m-0" style={{ color: C.text }}>
-                    Mi Perfil
-                </h1>
-                <p className="text-sm mt-1 mb-0" style={{ color: C.textMuted }}>
-                    Información personal y perfil clínico
-                </p>
+            <div className="mb-7 flex justify-between items-center">
+                <div>
+                    <h1 className="text-[26px] font-extrabold m-0" style={{ color: C.text }}>
+                        Mi Perfil
+                    </h1>
+                    <p className="text-sm mt-1 mb-0" style={{ color: C.textMuted }}>
+                        Información personal y perfil clínico
+                    </p>
+                </div>
+                {role === "PATIENT" && !editing && (
+                    <button 
+                        onClick={() => setEditing(true)}
+                        className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                        style={{ background: C.primary, color: "white" }}
+                    >
+                        Editar perfil clínico
+                    </button>
+                )}
             </div>
 
             <div className="grid gap-5" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -106,45 +155,101 @@ const PatientProfile: React.FC<Props> = ({ userName }) => {
                 {role === "PATIENT" && (
                     <div className="flex flex-col gap-4">
                         <Card>
-                            <div className="font-bold text-[15px] mb-4" style={{ color: C.text }}>
-                                Perfil clínico
+                            <div className="font-bold text-[15px] mb-4 flex justify-between items-center" style={{ color: C.text }}>
+                                <span>Perfil clínico</span>
+                                {editing && (
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => setEditing(false)}
+                                            className="text-xs font-bold px-3 py-1.5 rounded-md bg-gray-100"
+                                            style={{ color: C.textMuted }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            onClick={handleSave}
+                                            disabled={saving}
+                                            className="text-xs font-bold px-3 py-1.5 rounded-md"
+                                            style={{ background: C.primary, color: "white" }}
+                                        >
+                                            {saving ? "Guardando..." : "Guardar"}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
-                            <div
-                                className="px-3.5 py-3 rounded-lg mb-2.5"
-                                style={{ background: C.coralLight, borderLeft: `3px solid ${C.coral}` }}
-                            >
-                                <div className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1" style={{ color: C.coralDark }}>
-                                    Alergias
+                            <div className="flex flex-col gap-3.5">
+                                <div
+                                    className="px-3.5 py-3 rounded-lg"
+                                    style={{ background: C.coralLight, borderLeft: `3px solid ${C.coral}` }}
+                                >
+                                    <div className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1" style={{ color: C.coralDark }}>
+                                        Alergias
+                                    </div>
+                                    {editing ? (
+                                        <textarea 
+                                            className="w-full bg-transparent text-sm outline-none border-b border-coral/20 focus:border-coral transition-all py-1"
+                                            value={form.allergies}
+                                            onChange={(e) => setForm({...form, allergies: e.target.value})}
+                                            placeholder="Registra tus alergias..."
+                                        />
+                                    ) : (
+                                        <div className="text-sm" style={{ color: C.text }}>
+                                            {profile?.allergies || "Sin alergias registradas"}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-sm" style={{ color: C.text }}>
-                                    {profile?.allergies || "Sin alergias registradas"}
-                                </div>
-                            </div>
 
-                            <div
-                                className="px-3.5 py-3 rounded-lg mb-2.5"
-                                style={{ background: C.amberLight, borderLeft: `3px solid ${C.amber}` }}
-                            >
-                                <div className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1" style={{ color: C.amberDark }}>
-                                    Condiciones crónicas
+                                <div
+                                    className="px-3.5 py-3 rounded-lg"
+                                    style={{ background: C.amberLight, borderLeft: `3px solid ${C.amber}` }}
+                                >
+                                    <div className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1" style={{ color: C.amberDark }}>
+                                        Condiciones crónicas
+                                    </div>
+                                    {editing ? (
+                                        <textarea 
+                                            className="w-full bg-transparent text-sm outline-none border-b border-amber/20 focus:border-amber transition-all py-1"
+                                            value={form.chronic_conditions}
+                                            onChange={(e) => setForm({...form, chronic_conditions: e.target.value})}
+                                            placeholder="Registra tus condiciones crónicas..."
+                                        />
+                                    ) : (
+                                        <div className="text-sm" style={{ color: C.text }}>
+                                            {profile?.chronic_conditions || "Sin condiciones crónicas registradas"}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-sm" style={{ color: C.text }}>
-                                    {profile?.chronic_conditions || "Sin condiciones crónicas registradas"}
-                                </div>
-                            </div>
 
-                            <div
-                                className="px-3.5 py-3 rounded-lg"
-                                style={{ background: C.primaryLight, borderLeft: `3px solid ${C.primary}` }}
-                            >
-                                <div className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1" style={{ color: C.primaryDark }}>
-                                    Contacto de emergencia
-                                </div>
-                                <div className="text-sm" style={{ color: C.text }}>
-                                    {profile?.emergency_contact_name
-                                        ? `${profile.emergency_contact_name}${profile.emergency_contact_phone ? ` · ${profile.emergency_contact_phone}` : ""}`
-                                        : "Sin contacto de emergencia registrado"}
+                                <div
+                                    className="px-3.5 py-3 rounded-lg"
+                                    style={{ background: C.primaryLight, borderLeft: `3px solid ${C.primary}` }}
+                                >
+                                    <div className="text-[11px] font-bold uppercase tracking-[0.04em] mb-1" style={{ color: C.primaryDark }}>
+                                        Contacto de emergencia
+                                    </div>
+                                    {editing ? (
+                                        <div className="flex flex-col gap-2">
+                                            <input 
+                                                className="w-full bg-transparent text-sm outline-none border-b border-primary/20 focus:border-primary transition-all py-1"
+                                                value={form.emergency_contact_name}
+                                                onChange={(e) => setForm({...form, emergency_contact_name: e.target.value})}
+                                                placeholder="Nombre del contacto"
+                                            />
+                                            <input 
+                                                className="w-full bg-transparent text-sm outline-none border-b border-primary/20 focus:border-primary transition-all py-1"
+                                                value={form.emergency_contact_phone}
+                                                onChange={(e) => setForm({...form, emergency_contact_phone: e.target.value})}
+                                                placeholder="Teléfono del contacto"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm" style={{ color: C.text }}>
+                                            {profile?.emergency_contact_name
+                                                ? `${profile.emergency_contact_name}${profile.emergency_contact_phone ? ` · ${profile.emergency_contact_phone}` : ""}`
+                                                : "Sin contacto de emergencia registrado"}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </Card>

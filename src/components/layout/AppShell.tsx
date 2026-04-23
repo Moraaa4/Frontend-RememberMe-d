@@ -48,7 +48,7 @@ const AppShell: React.FC<AppShellProps> = ({ role, userName, onLogout }) => {
                 case "intakes":     return <PatientIntakes />;
                 case "symptoms":    return <PatientSymptoms />;
                 case "doctor":      return <PatientMyDoctor />;
-                case "profile":     return <PatientProfile userName={userName} />;
+                case "profile":     return <PatientProfile userName={userName} role={role} />;
                 default:            return <PatientDashboard userName={userName} />;
             }
         }
@@ -59,7 +59,7 @@ const AppShell: React.FC<AppShellProps> = ({ role, userName, onLogout }) => {
                 case "patient-detail":
                     return <PatientDetail patient={selectedPatient} onBack={() => setScreen("dashboard")} />;
                 case "profile":
-                    return <PatientProfile userName={userName} />;
+                    return <PatientProfile userName={userName} role={role} />;
                 default:
                     return <DoctorDashboard onSelectPatient={handleSelectPatient} />;
             }
@@ -69,7 +69,7 @@ const AppShell: React.FC<AppShellProps> = ({ role, userName, onLogout }) => {
 
     return (
         <div style={{ background: C.bg, fontFamily: "Nunito, sans-serif", minHeight: "100vh" }}>
-            <Sidebar role={role} active={screen} onNav={handleNav} onLogout={onLogout} />
+            <Sidebar role={role} active={screen} userName={userName} onNav={handleNav} onLogout={onLogout} />
             <main style={{ marginLeft: 240, padding: "32px 36px", minHeight: "100vh" }}>
                 {renderContent()}
             </main>

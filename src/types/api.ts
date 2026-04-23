@@ -91,6 +91,9 @@ export interface ApiLinkedPatient {
   high_severity_alert: boolean;
   active_meds_count: number | null;
   last_symptom_date: string | null;
+  allergies: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
 }
 
 export interface ApiMyDoctor {

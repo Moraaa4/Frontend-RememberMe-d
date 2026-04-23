@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     if (!token) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
-    const data = await apiFetch<{ data: ApiMedication[] }>('/api/medications', { token });
+    const data = await apiFetch<ApiMedication[]>('/api/medications', { token });
     return NextResponse.json(data);
   } catch (err) {
     if (err instanceof ApiError) {

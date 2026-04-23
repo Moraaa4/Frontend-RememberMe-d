@@ -32,6 +32,9 @@ function formatDate(d: Date): string {
 }
 
 function formatTime(timeStr: string): string {
+    if (timeStr.includes('T')) {
+        return timeStr.split('T')[1].slice(0, 5);
+    }
     return timeStr.slice(0, 5);
 }
 
@@ -44,13 +47,13 @@ const PatientDashboard: React.FC<Props> = ({ userName }) => {
     useEffect(() => {
         fetch("/api/intake-logs/today")
             .then((r) => r.json())
-            .then((d: { data: ApiIntakeLog[] }) => setIntakes(d.data ?? []))
+            .then((d: ApiIntakeLog[]) => setIntakes(Array.isArray(d) ? d : []))
             .catch(() => setIntakes([]))
             .finally(() => setLoadingI(false));
 
         fetch("/api/medications")
             .then((r) => r.json())
-            .then((d: { data: ApiMedication[] }) => setMeds(d.data ?? []))
+            .then((d: ApiMedication[]) => setMeds(Array.isArray(d) ? d : []))
             .catch(() => setMeds([]))
             .finally(() => setLoadingM(false));
     }, []);
@@ -66,7 +69,7 @@ const PatientDashboard: React.FC<Props> = ({ userName }) => {
                     {formatDate(new Date())}
                 </div>
                 <h1 className="text-[26px] font-extrabold m-0" style={{ color: C.text }}>
-                    Buenos días, {firstName} 👋
+                    Buenos días, {userName} 👋
                 </h1>
             </div>
 

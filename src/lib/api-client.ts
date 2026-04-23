@@ -35,6 +35,7 @@ export async function apiFetch<T>(
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    cache: 'no-store',
   });
 
   if (res.status === 204) return null as unknown as T;

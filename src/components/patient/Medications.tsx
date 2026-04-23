@@ -47,8 +47,8 @@ const PatientMedications: React.FC = () => {
         try {
             const res = await fetch("/api/medications");
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error ?? "Error");
-            setMeds(data.data ?? []);
+            if (!res.ok) throw new Error((data as { error?: string }).error ?? "Error");
+            setMeds(Array.isArray(data) ? (data as ApiMedication[]) : []);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Error al cargar medicamentos");
         } finally {

@@ -19,7 +19,7 @@ interface NavItem {
 const patientNav: NavItem[] = [
     { id: "dashboard",   label: "Inicio",        icon: <IcHome size={18} />                       },
     { id: "medications", label: "Medicamentos",  icon: <IcPill size={18} />                       },
-    { id: "intakes",     label: "Tomas del día", icon: <IcCheck size={18} />,    badge: "3"       },
+    { id: "intakes",     label: "Tomas del día", icon: <IcCheck size={18} />                      },
     { id: "symptoms",    label: "Mi Evolución",  icon: <IcActivity size={18} />                   },
     { id: "doctor",      label: "Mi Médico",     icon: <IcLink size={18} />                       },
     { id: "profile",     label: "Mi Perfil",     icon: <IcUser size={18} />                       },
@@ -30,11 +30,11 @@ const doctorNav: NavItem[] = [
     { id: "profile",   label: "Mi Perfil",     icon: <IcUser size={18} />  },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ role, active, onNav, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ role, active, userName, onNav, onLogout }) => {
     const nav  = role === "DOCTOR" ? doctorNav : patientNav;
     const user = role === "DOCTOR"
-        ? { name: "Dra. Ana López", sub: "Endocrinología", color: C.violet  }
-        : { name: "Juan Pérez",     sub: "Paciente",       color: C.primary };
+        ? { name: userName || "Dr/a.", sub: "Médico", color: C.violet  }
+        : { name: userName || "Paciente", sub: "Paciente", color: C.primary };
 
     const isActive = (id: string): boolean =>
         active === id || (id === "patients" && active.startsWith("patient"));

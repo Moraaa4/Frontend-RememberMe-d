@@ -67,6 +67,9 @@ export interface DoctorPatient {
     last_symptom: string;
     alert: boolean;
     meds: number;
+    allergies: string | null;
+    emergency_contact_name: string | null;
+    emergency_contact_phone: string | null;
 }
 
 export interface DoctorLink {
@@ -164,6 +167,7 @@ export interface EmptyStateProps {
 export interface SidebarProps {
     role: UserRole;
     active: string;
+    userName: string;
     onNav: (id: string) => void;
     onLogout: () => void;
 }

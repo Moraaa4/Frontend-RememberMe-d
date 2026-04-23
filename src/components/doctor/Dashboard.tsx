@@ -33,6 +33,9 @@ const mapPatient = (p: ApiLinkedPatient): DoctorPatient => ({
     last_symptom:  p.last_symptom_date?.slice(0, 10) ?? "—",
     alert:         p.high_severity_alert || (p.adherence_pct ?? 100) < 60,
     meds:          p.active_meds_count ?? 0,
+    allergies:     p.allergies ?? "Sin alergias registradas",
+    emergency_contact_name:  p.emergency_contact_name ?? "No registrado",
+    emergency_contact_phone: p.emergency_contact_phone ?? "No registrado",
 });
 
 const adColor = (pct: number): string =>
@@ -86,10 +89,10 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onSelectPatient, user
                 <h1 className="text-[26px] font-extrabold m-0" style={{ color: C.text }}>
                     Panel Médico
                 </h1>
-                {firstName && (
+                {userName && (
                     <p className="text-sm mt-1 mb-0" style={{ color: C.textMuted }}>
                         Bienvenido/a,{" "}
-                        <strong style={{ color: C.text }}>Dr/a. {firstName}</strong>
+                        <strong style={{ color: C.text }}>{userName}</strong>
                     </p>
                 )}
             </div>

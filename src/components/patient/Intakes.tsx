@@ -31,6 +31,9 @@ const statusBg: Record<IntakeStatus, string> = {
 };
 
 function formatTime(timeStr: string): string {
+    if (timeStr.includes('T')) {
+        return timeStr.split('T')[1].slice(0, 5);
+    }
     return timeStr.slice(0, 5);
 }
 
@@ -42,17 +45,17 @@ const PatientIntakes: React.FC = () => {
     useEffect(() => {
         fetch("/api/intake-logs/today")
             .then((r) => r.json())
-            .then((d: { data: ApiIntakeLog[] }) => setIntakes(d.data ?? []))
+            .then((d: ApiIntakeLog[]) => setIntakes(Array.isArray(d) ? d : []))
             .catch(() => setError("Error al cargar las tomas"))
             .finally(() => setLoading(false));
     }, []);
 
     const confirm = async (id: number): Promise<void> => {
         try {
-            const res = await fetch(`/api/intake-logs/${id}/confirm`, {
+            const res = await fetch(`/api/intake-logs/confirm`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "taken" }),
+                body: JSON.stringify({ logId: id, status: "taken" }),
             });
             if (!res.ok) return;
             const now = new Date();
